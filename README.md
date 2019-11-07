@@ -67,13 +67,13 @@ dataframe.write
 
 主要是因为DataFrameWriter是sparksql对接外部数据源写入的入口携带类，下面这些内容是给DataFrameWriter注册的携带信息
 
-![image](https://github.com/niutaofan/doSomething/blob/master/image/image-20191106191057507.png)
+![image](https://github.com/niutaofan/bazinga/blob/master/image/image-20191106191057507.png)
 
 然后在出发save()操作后，就开始将数据写入；
 
 接下来看save()源码：
 
-![image](https://github.com/niutaofan/doSomething/blob/master/image/image-20191106191216176.png)
+![image](https://github.com/niutaofan/bazinga/blob/master/image/image-20191106191216176.png)
 
 在上面的源码里面主要是注册DataSource实例，然后使用DataSource的write方法进行数据写入
 
@@ -99,21 +99,21 @@ def save(): Unit = {
 
 
 
-![image](https://github.com/niutaofan/doSomething/blob/master/image/image-20191106192449903.png)
+![image](https://github.com/niutaofan/bazinga/blob/master/image/image-20191106192449903.png)
 
 然后看下providingClass是什么：
 
-![image](https://github.com/niutaofan/doSomething/blob/master/image/image-20191106192903011.png)
+![image](https://github.com/niutaofan/bazinga/blob/master/image/image-20191106192903011.png)
 
-![image](https://github.com/niutaofan/doSomething/blob/master/image/image-20191106203416941.png)
+![image](https://github.com/niutaofan/bazinga/blob/master/image/image-20191106203416941.png)
 
 拿到包路径.DefaultSource之后，程序进入：
 
-![image](https://github.com/niutaofan/doSomething/blob/master/image/image-20191106203650208.png)
+![image](https://github.com/niutaofan/bazinga/blob/master/image/image-20191106203650208.png)
 
 那么如果是数据库作为写入目标的话，就会走：dataSource.createRelation，直接跟进源码：
 
-![image](https://github.com/niutaofan/doSomething/blob/master/image/image-20191106203730742.png)
+![image](https://github.com/niutaofan/bazinga/blob/master/image/image-20191106203730742.png)
 
 很明显是个特质，因此哪里实现了特质，程序就会走到哪里了；
 
@@ -137,7 +137,7 @@ if(isUpdate){
 
 但是，在spark生产sql语句的源码中，是这样写的：
 
-![image](https://github.com/niutaofan/doSomething/blob/master/image/image-20191106205847443.png)
+![image](https://github.com/niutaofan/bazinga/blob/master/image/image-20191106205847443.png)
 
 没有任何的判断逻辑，就是最后生成一个:
 
@@ -169,7 +169,7 @@ def insertStatement(conn: Connection, savemode:CustomSaveMode , table: String, r
 
 所以按照上面的逻辑，我们代码这样写：
 
-![image](https://github.com/niutaofan/doSomething/blob/master/image/image-20191106211204245.png)
+![image](https://github.com/niutaofan/bazinga/blob/master/image/image-20191106211204245.png)
 
 这样我们就拿到了对应的sql语句；
 
@@ -177,11 +177,11 @@ def insertStatement(conn: Connection, savemode:CustomSaveMode , table: String, r
 
 即jdbc在遍历这个sql的时候，源码会这样做：
 
-![image](https://github.com/niutaofan/doSomething/blob/master/image/image-20191106225148137.png)
+![image](https://github.com/niutaofan/bazinga/blob/master/image/image-20191106225148137.png)
 
 看下makeSetter：
 
-![image](https://github.com/niutaofan/doSomething/blob/master/image/image-20191106225610787.png)
+![image](https://github.com/niutaofan/bazinga/blob/master/image/image-20191106225610787.png)
 
 所谓有坑就是：
 
@@ -204,7 +204,7 @@ insert into table (字段1 , 字段2, 字段3) values (? , ? , ?) ON DUPLICATE K
 
 那么很明显，上面的sql语句提供了6个？ ， 但在规定字段长度的时候只有3
 
-![image](https://github.com/niutaofan/doSomething/blob/master/image/image-20191106230115815.png)
+![image](https://github.com/niutaofan/bazinga/blob/master/image/image-20191106230115815.png)
 
 这样的话，后面的update操作就无法执行，程序报错！
 
@@ -218,7 +218,7 @@ if(isupdate){
 }
 ```
 
-![image](https://github.com/niutaofan/doSomething/blob/master/image/image-20191106231201966.png)
+![image](https://github.com/niutaofan/bazinga/blob/master/image/image-20191106231201966.png)
 
 row[1,2,3]
 setter(0,1) //index of setter  ,   index of row
@@ -232,11 +232,11 @@ setter(5,3)
 
 因此，代码改造前样子：
 
-![image](https://github.com/niutaofan/doSomething/blob/master/image/image-20191106231254641.png)
+![image](https://github.com/niutaofan/bazinga/blob/master/image/image-20191106231254641.png)
 
 
 
-![image](https://github.com/niutaofan/doSomething/blob/master/image/image-20191106231347510.png)
+![image](https://github.com/niutaofan/bazinga/blob/master/image/image-20191106231347510.png)
 
 
 
