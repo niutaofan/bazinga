@@ -4,7 +4,7 @@
 
 spark提供了一个枚举类，用来支撑对接数据源的操作模式
 
-![image](https://github.com/niutaofan/doSomething/blob/master/image/image-20191106172641680.png)
+![image](https://github.com/niutaofan/bazinga/blob/master/image/image-20191106172641680.png)
 
 通过源码查看，很明显，spark是不支持update操作的
 
